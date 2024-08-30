@@ -167,7 +167,9 @@ defaultData = {
 		["volume"] = {
 			master = 1,
 			music = 0.5,
-			sfx = 1
+			sfx = 1,
+      offset = 0,
+      starttime = 0
 		},
 		["misc"] = {
 
@@ -950,7 +952,7 @@ for _, i in pairs(tab) do
     t = t .. tostring(i) .. ", "
 end
 
-print(t)
+--print(t)
 
 wallKickDefault = {
 	{{0,0},{-1,0},{-1,1},{0,-2},{-1,-2}}, -- 0>1
@@ -1249,6 +1251,8 @@ soundMenu = {
 	"Master Volume",
 	"Music Volume",
 	"SFX Volume",
+  "Audio Offset",
+  "Song Start Time",
 	"Back to Options"
 }
 
