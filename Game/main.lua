@@ -5,7 +5,6 @@ version = "0.7.2"
 
 board_offset = {(275),50}
 
-
 require"Tserial"
 
 require"libs"
@@ -159,7 +158,7 @@ function love.update(dt)
 
 	if game.updateDelay then
 		game.updateDelay = game.updateDelay - dt
-		print("ah")
+		--print("ah")
 		if game.updateDelay < 0 then
 
 			table.insert(movingObjects, {
@@ -400,7 +399,7 @@ function love.update(dt)
 
 		local canTopOut = (not game.inReplay) or (not game.replayData.inputs[game.replayData.position+1])
 
-		if (not check_collision() or game.hp <= 0 or game.deathTransition) and canTopOut then
+		if (not check_collision() or (game.hp <= 0 and data.volume.starttime == 0) or game.deathTransition) and canTopOut then
 			if not game.deathTransition then game.song_pitch = 1 game.boardVelocity = 0 end
 
 			game.deathTransition = true
@@ -449,6 +448,7 @@ function love.update(dt)
 		end
 
 		if game.hp > 1 then game.hp = 1 end
+		if game.hp < 0 then game.hp = 0 end
 
 		--print(total_time.. " : " ..song:tell())
 
@@ -490,7 +490,7 @@ function love.update(dt)
 		end
 
 		if song then
-			total_time = song:tell()
+			total_time = song:tell() + data.volume.offset
 		elseif game.startOffset <= 0 then
 			total_time = total_time + (dt * game.replayPlaybackRate)
 		end
@@ -704,7 +704,7 @@ function love.update(dt)
 			das_prog = das_prog + dt
 			arr_prog = arr_prog + dt
 		end
-		print(canMove)
+		--print(canMove)
 		if canMove and frameInputs.left then
 
 
@@ -865,7 +865,7 @@ function love.update(dt)
 			for i = game.menuFlashPos - 1, #game.mapListing[game.selectedMap].flash_table do
 				if game.mapListing[game.selectedMap].flash_table[i] and songTime >= game.mapListing[game.selectedMap].flash_table[i] and game.menuFlashPos < i then
 					game.menuFlashPos = i
-					print("flash")
+					--print("flash")
 					game.decorScale = 1.1
 						if not submitted then
 							table.insert(movingObjects,{
@@ -1070,6 +1070,13 @@ function love.draw()
 
 
 	swidth, sheight = love.graphics.getDimensions()
+	game.swidth = swidth
+	game.sheight = sheight
+	bumpx = (swidth-800)/2
+	bumpy = (sheight-600)/2
+
+	game.bumpx = bumpx
+	game.bumpy = bumpy
 
 	if love.system.getOS() == "Android" then
 		local scale = love.graphics.getDPIScale()
@@ -1078,14 +1085,6 @@ function love.draw()
 		swidth = swidth * scale
 		sheight = sheight * scale
 	end
-	
-	game.swidth = swidth
-	game.sheight = sheight
-	bumpx = (swidth-800)/2
-	bumpy = (sheight-600)/2
-
-	game.bumpx = bumpx
-	game.bumpy = bumpy
 
 	if not data.boardZoom then data.boardZoom = 1 end
 
@@ -1123,7 +1122,7 @@ function love.draw()
 
 
 	if game_state == "InGame" then
-		if song then total_time = song:tell() end
+		if song then total_time = song:tell() + data.volume.offset end
 
 		if game.inReplay then
 			print("inputs")
@@ -1203,7 +1202,7 @@ function love.draw()
 
 
 
-		print("flashTimes")
+		--print("flashTimes")
 
 		if game.flashTimes then
 			if game.flashTimes[game.flashPos] and total_time > game.flashTimes[game.flashPos] then
@@ -1252,7 +1251,7 @@ function love.draw()
 
 		drawMovingObjects(2)
 
-		if game.hp < 0.3 then
+		if game.hp < 0.3 and data.volume.starttime == 0 then
 			game.dangerFlashO = game.dangerFlashO + 0.008 * 60 * game.dt
 			if game.dangerFlashO > 1 then game.dangerFlashO = 1 end
 		else
@@ -1717,7 +1716,7 @@ function love.draw()
 				game.approachRatio = 0
 			end
 
-			--print(#game.beatmap)
+			
 
 			local length = 400
 
@@ -1968,7 +1967,7 @@ function love.draw()
 		end
 
 		if game.pauseOpacity > 0 then -- draw the pause menu
-			print(game.pauseOpacity)
+			--print(game.pauseOpacity)
 			love.graphics.push()
 			love.graphics.setColor(0,0,0,game.pauseOpacity)
 			love.graphics.draw(flashmino_img, 0, 0, 0, 500, 500)
@@ -2194,7 +2193,23 @@ function love.draw()
 			if text == "> SFX Volume" then
 				love.graphics.print("<"..(data.volume.sfx * 100) .. "%>", 500 + bumpx, 150 + bumpy + 25 * n, 0, .6, .6)								
 			end		
-
+      
+      if text == "Audio Offset" then
+				love.graphics.print((data.volume.offset*1000) .. " ms", 500 + bumpx, 150 + bumpy + 25 * n, 0, .6, .6)								
+			end		
+      
+      if text == "> Audio Offset" then
+				love.graphics.print("<"..(data.volume.offset*1000) .. " ms>", 500 + bumpx, 150 + bumpy + 25 * n, 0, .6, .6)								
+			end	
+      
+      if text == "Song Start Time" then
+				love.graphics.print((data.volume.starttime and data.volume.starttime or 0) .. " s", 500 + bumpx, 150 + bumpy + 25 * n, 0, .6, .6)								
+			end		
+      
+      if text == "> Song Start Time" then
+				love.graphics.print("<"..(data.volume.starttime and data.volume.starttime or 0) .. " s>", 500 + bumpx, 150 + bumpy + 25 * n, 0, .6, .6)								
+			end	
+      
 			if text == "Tetromino Design" then
 				love.graphics.draw(flashmino_img, 515 + bumpx, 147 + bumpy + 25 * n, 0,  1, 1)
 				love.graphics.draw(mino_img, 515 + bumpx, 147 + bumpy + 25 * n, 0, 25/mino_img:getWidth(), 25/mino_img:getHeight())
