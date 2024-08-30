@@ -894,8 +894,11 @@ function initGame(music, map, restart) -- takes song filepath (string) and map (
 
 
  	if song then
+    song:seek(data.volume.starttime)
+    
+    
 		mode = "Map"
-
+    
 		game.endTime = map_data[1].endTime and map_data[1].endTime or song:getDuration()
 		if map_data[1].startTime then
 			song:seek(map_data[1].startTime)
@@ -2111,7 +2114,21 @@ function checkForInput(input, gamepad, realInput)
 				if data.volume.sfx > 1 then data.volume.sfx = 1 end
 				if data.volume.sfx < 0 then data.volume.sfx = 0 end
 			end
-
+      
+      if menuItems[selected_menu_item] == "Audio Offset" then
+        if not data.volume.offset then
+          data.volume.offset = 0
+        end
+				data.volume.offset = math.floor(((data.volume.offset + (.005 * (input == key.left and -1 or 1)))*1000)+0.5)/1000
+			end
+      
+      if menuItems[selected_menu_item] == "Song Start Time" then
+        if not data.volume.starttime then
+          data.volume.starttime = 0
+        end
+				data.volume.starttime = (data.volume.starttime + (input == key.left and -1 or 1))
+			end
+      
 			if menuItems[selected_menu_item] == "Tetromino Design" then
 				selected_mino = selected_mino + 1 * (input == key.left and -1 or 1)
 				if selected_mino > mino_skin_counter then
@@ -2255,7 +2272,7 @@ function checkForInput(input, gamepad, realInput)
 			print("waitingForInput ".. tostring(waitingForInput))
 			waitedForInput = true
 		end
-		print(input)
+		--print(input)
 		print("waitedForInput "..tostring(waitedForInput))
 		if input == "return" and not waitingForInput and not waitedForInput then
 			save(nil, true)
